@@ -1,0 +1,142 @@
+   27  sudo apt-get install libdvd-pkg
+   28  sudo dpkg-reconfigure libdvd-pkg
+   29  sudo apt-get install regionset
+   30  sudo apt-get install libavcodec-extra
+   31  sudo apt-get install handbrake handbrake-cli
+   32  sudo apt install dvdbackup
+   33  dvdbackup
+   34  sudo apt-get install avahi-daemon
+   35  udevadm info
+   36  udevadm info /dev/cdrom
+   37  udevadm info /devices/pci0000:00/0000:00:17.0/ata4/host3/target3:0:0/3:0:0:0/block/sr0
+   38  udevadm info -ap /devices/pci0000:00/0000:00:17.0/ata4/host3/target3:0:0/3:0:0:0/block/sr0
+   39  udevadm test ACTION=="change" /devices/pci0000:00/0000:00:17.0/ata4/host3/target3:0:0/3:0:0:0/block/sr0
+   40  udevadm test action="change" /devices/pci0000:00/0000:00:17.0/ata4/host3/target3:0:0/3:0:0:0/block/sr0
+   41  udevadm test --action="change" /devices/pci0000:00/0000:00:17.0/ata4/host3/target3:0:0/3:0:0:0/block/sr0
+   42  ls -l /usr/local/bin/autodvd
+   43  sudo chmod ug+rwx /usr/local/bin/autodvd
+   44  HandBrakeCLI
+   45  HandBrakeCLI --help
+   46  dvdbackup
+   47  sh /home/mediafiles/handbrake.sh
+   48  /home/mediafiles/handbrake.sh
+   49  bash /home/mediafiles/handbrake.sh
+   50  bash /home/mediafiles/dvdrip.sh
+   51  sudo apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev
+   52  mkdir ./makemkv
+   53  cd ./makemkv
+   54  wget https://www.makemkv.com/download/makemkv-bin-1.17.2.tar.gz
+   55  ls
+   56  wget https://www.makemkv.com/download/makemkv-oss-1.17.2.tar.gz
+   57  tar -xvf makemkv-bin-1.17.2.tar.gz
+   58  ls
+   59  tar -xvf makemkv-oss-1.17.2.tar.gz
+   60  cd makemkv-oss-1.17.2
+   61  ./configure
+   62  make
+   63  sudo make install
+   64  cd ../
+   65  ls
+   66  cd makemkv-bin-1.17.2
+   67  make
+   68  sudo make install
+   69  sudo apt-get install regionset
+   70  regionset /dev/cdrom
+   71  blkid -o value -s LABEL /dev/cdrom
+   72  sudo chmod ug+rwx /home/mediafiles/makemkvrip.sh
+   73  blkid -o value -s LABEL /dev/cdrom
+   74  sudo su
+   75  makemkv
+   76  makemkvcon
+   77  makemkvcon info /dev/cdrom
+   78  sudo makemkvcon info /dev/cdrom
+   79  vlc 
+   80  sudo apt  install vlc-bin
+   81  vlc 
+   82  vlc dvd://
+   83  vlc --help
+   84  vlc dvd://dev/cdrom
+   85  vlc /dev/cdrom
+   86  sudo makemkvcon info /dev/cdrom
+   87  bash /home/mediafiles/dvdrip.sh
+   88  sudo makemkvcon info /dev/cdrom
+   89  makemkvcon
+   90  makemkvcon reg T-2KF3Fsx1NkAkuKtr3o47Fv4Bf4YoFgqnxEPqm9sTPIT1Ya70CTlIcRXbSPPzHIDq7z
+   91  makemkvcon reg 2KF3Fsx1NkAkuKtr3o47Fv4Bf4YoFgqnxEPqm9sTPIT1Ya70CTlIcRXbSPPzHIDq7z
+   92  makemkvcon backup /dev/cdrom /home/mediafiles/Videos/test
+   93  makemkvcon backup dev:/dev/cdrom /home/mediafiles/Videos/test
+   94  sudo makemkvcon info dev:/dev/cdrom
+   95  makemkvcon -r info
+   96  makemkvcon info dev:/dev/sr0
+   97  makemkvcon backup dev:/dev/sr0 /home/mediafiles/Videos/test
+   98  makemkvcon backup disc:0 /home/mediafiles/Videos/test
+   99  akemkvcon nathan@plexserver:~$ makemkvcon backup disc:0 /home/mediafiles/Videos/vobs/test/backup disc:0 /home/mediafiles/Videos/vobs/test/
+  100  makemkvcon -r --decrypt backup disc:0 /home/mediafiles/Videos/vobs/test/backup disc:0 /home/mediafiles/Videos/vobs/test/
+  101  makemkvcon backup disc:0 /home/mediafiles/Videos/vobs/test/backup disc:0 /home/mediafiles/Videos/vobs/test/ -r --decrypt
+  102  makemkvcon backup disc:0 /home/mediafiles/Videos/vobs/test/backup -r --decrypt
+  103  makemkvcon --minlength=3000 -r --decrypt mkv disc:0 all /home/mediafiles/Videos/vobs/test
+  104  eject -r
+  105  makemkvcon --minlength=3000 -r --decrypt mkv disc:0 all /home/mediafiles/Videos/vobs/test ; eject -r
+  106  eject -r
+  107  bash /home/mediafiles/makemkvrip.sh
+  108  /home/mediafiles/makemkvrip.sh
+  109  sudo nano /usr/local/bin/autodvd
+  110  bash /home/mediafiles/makemkvrip.sh
+  111  sudo nano /usr/local/bin/autodvd
+  112  bash /home/mediafiles/makemkvrip.sh
+  113  setid
+  114  /usr/bin/setsid -h
+  115  sudo nano /etc/systemd/system/dvdrip.service
+  116  systemctl start dvdrip
+  117  sudo nano /etc/udev/rules.d/autodvd.rules
+  118  udevadm control --reload-rules && udevadm trigger
+  119  sudo udevadm control --reload-rules && udevadm trigger
+  120  sudo udevadm control --reload-rules && sudo udevadm trigger
+  121  sudo nano /etc/udev/rules.d/autodvd.rules
+  122  sudo nano /etc/systemd/system/dvdrip.service
+  123  systemctl start dvdrip
+  124  sudo nano /etc/systemd/system/dvdrip.service
+  125  systemctl start dvdrip
+  126  sudo nano /etc/udev/rules.d/autodvd.rules
+  127  sudo udevadm control --reload-rules && sudo udevadm trigger
+  128  sudo mkdir /var/log/dvdrip
+  129  sudo nano /etc/udev/rules.d/autodvd.rules
+  130  sudo udevadm control --reload-rules && sudo udevadm trigger
+  131  sudo nano /etc/udev/rules.d/autodvd.rules
+  132  sudo udevadm control --reload-rules && sudo udevadm trigger
+  133  bash /home/mediafiles/dvdtrigger.sh
+  134  sudo apt install inotify-tools
+  135  bash /home/mediafiles/dvdtrigger.sh
+  136  sudo nano /etc/systemd/system/dvdrip.service
+  137  sudo chmod ug+rwx /home/mediafiles/dvdtrigger.sh
+  138  sudo nano /etc/systemd/system/dvdrip.service
+  139  systemctl start dvdrip
+  140  systemctl stop dvdrip
+  141  systemctl enable dvdrip
+  142  systemctl start dvdrip
+  143  systemctl stop dvdrip
+  144  sudo systemctl stop dvdrip
+  145  sudo systemctl start dvdrip
+  146  sudo nano /etc/systemd/system/dvdrip.service
+  147  /home/mediafiles/dvdtrigger.sh
+  148  sudo systemctl start dvdrip
+  149  sudo systemctl stop dvdrip
+  150  sudo systemctl start dvdrip
+  151  sudo systemctl stop dvdrip
+  152  sudo systemctl start dvdrip
+  153  sudo systemctl stop dvdrip
+  154  sudo systemctl start dvdrip
+  155  /home/mediafiles/dvdtrigger.sh
+  156  sudo systemctl stop dvdrip
+  157  sudo systemctl start dvdrip
+  158  sudo su
+  159  makemkvcon
+  160  makemkvcon info disc:0
+  161  /home/nathan/.local/bin/dvdrip
+  162  lsdvd
+  163  sudo apt install lsdvd
+  164  lsdvd
+  165  lsdvd /dev/sr0
+  166  lsdvd -c /dev/sr0
+  167  lsdvd -d /dev/sr0
+  168  lsdvd /dev/sr0
