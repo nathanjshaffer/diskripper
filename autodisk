@@ -1,0 +1,23 @@
+
+set -xv
+echo "autodisk " `date '+%s'` "$DEVNAME \n" > /home/${user}/.var/log/diskrip/.messages.log
+{
+  if [ "$ID_CDROM_MEDIA_BD" -eq "1" ]; then
+    echo bdrip $DEVNAME | at now
+    #echo "BD insert" > "/home/${user}/.var/log/diskrip/.insert" 
+    exit 1
+  fi
+}
+{
+  if [ "$ID_CDROM_MEDIA_DVD" -eq "1" ]; then
+    echo dvdrip $DEVNAME | at now
+    #echo "dvd insert" > "/home/${user}/.var/log/diskrip/.insert" 
+  fi
+}
+{
+  if [ "$ID_CDROM_MEDIA_CD" -eq "1" ]; then
+    echo cdrip $DEVNAME | at now
+    #echo "cd insert" > "/home/${user}/.var/log/diskrip/.insert" 
+  fi
+}
+

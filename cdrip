@@ -1,0 +1,14 @@
+
+device=$1
+
+discname=$(blkid -o value -s LABEL $device)
+discname=$(tr '_' ' ' <<<"$discname")
+discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
+arr=( $discname )
+discname=${arr[@]^}
+logfile="${discname}.log"
+sleep 10
+
+echo `date '+%s'` >> /home/${user}/.var/log/diskrip/cd/$logfile
+
+abcde >> $logfile

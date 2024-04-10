@@ -1,0 +1,17 @@
+
+ffmpegVer=7.0
+makemkvVer=1.17.6
+
+user=""
+
+
+CD_ripdir=""
+CD_remotedir=""
+
+DVD_ripdirr=""
+DVD_remotedir=""
+DVD_format="mkv"
+
+BD_ripdir=""
+BD_remotedir=""
+BD_format="mkv"

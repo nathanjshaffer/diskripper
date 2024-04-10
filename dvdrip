@@ -1,0 +1,65 @@
+
+device=$1
+
+echo `date '+%s'`" - starting dvdripper" >> /home/${user}/.var/log/diskrip/.messages.log
+
+echo $device >> /home/${user}/.var/log/diskrip/.messages.log
+
+logdir=/home/${user}/.var/log/diskrip/dvd/
+
+#####
+
+discname=$(blkid -o value -s LABEL $device)
+discname=$(tr '_' ' ' <<<"$discname")
+discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
+arr=( $discname )
+discname=${arr[@]^}
+logfile="${logdir}${discname}.log"
+
+echo "ripping disc $discname" >> "$logfile"
+echo "ripping disc $discname" >> /home/${user}/.var/log/diskrip/.messages.log
+
+sleep 2;
+
+makemkvcon --progress=stdout --minlength=2500 --decrypt ${outformat} dev:$device all $ripdir >> "$logfile"; 
+
+sleep 2;
+
+# Rename Files
+
+numFiles=`find $ripdir -maxdepth 1 -iname '*.${outformat}' -printf x | wc -c`
+
+find $ripdir -maxdepth 1 -iname '*.${outformat}' -print0 | sort -z | while IFS= read -r -d '' file; 
+do 
+    namestatus=""
+
+    if [[ "$mkvname" == *"$-"* ]]; then
+
+        mkvname=${file#*$ripdir}
+        mkvname=${mkvname%%-*}
+ 
+        mv "$logfile" "${logdir}${mkvname}.log"
+        logfile="${logdir}${mkvname}.log"
+        mkvname="${mkvname}"
+        namestatus="${outformat} name"
+    else
+        mkvname="${discname}"
+        namestatus="disc name"
+    fi
+
+    i=1
+    if (( numFiles > 1 )); then
+      mkvname="${mkvname}_$i"
+      ((i=i+1))
+    fi
+
+    mkvname="${mkvname}.${outformat}"
+    echo "Renaming $file to ${mkvname}.${outformat}" >> "$logfile";
+
+    mv "$file" "${remotedir}${mkvname}"
+
+    echo "File = ${remotedir}${mkvname} ----  Disc = ${discname} ---- using:${namestatus}" >> "${logdir}riplist.txt"
+done
+
+sleep 2 ;
+eject -r  $device
