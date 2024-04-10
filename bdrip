@@ -4,6 +4,8 @@ device=$1
 
 logdir=/home/${user}/.var/log/diskrip/bd/
 
+mkdir -p ${logdir}
+
 echo `date '+%s'`" - starting dvdripper \n" >> ${logdir}.messages.log
 echo $1 >> ${logdir}.messages.log
 
@@ -40,6 +42,7 @@ do
     title=${title:11}
     
     fileoutname="${discname}/${title}"
+    mkdir "${remotedir}/${discname}"
 
     if (( numFiles > 1 )); then
       fileoutname="${fileoutname}_$i"

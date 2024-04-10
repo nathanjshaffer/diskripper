@@ -65,17 +65,16 @@ if [[ $install == true ]] || [[ $update == true ]]; then
   echo -e '#!/bin/bash'"\n" > /tmp/cdrip
   echo "user=\"${user}\"
 ripdir=\"${CD_ripdir}\"
-remotedir=\"${CD_remotedir}\"" >> /tmp/cdrip
-  cat ./bdrip >> /tmp/cdrip
-  
+remotedir=\"${CD_remotedir}\"
+outformat=\"${CD_outformat}\"" >> /tmp/cdrip
+  cat ./cdrip >> /tmp/cdrip
   
   echo '-e #!/bin/bash'"\n" > /tmp/dvdrip
   echo "user=\"${user}\"
 ripdir=\"${DVD_ripdir}\"
 remotedir=\"${DVD_remotedir}\"
 outformat=\"${DVD_outformat}\"" >> /tmp/dvdrip
-  cat ./bdrip >> /tmp/dvdrip
-  
+  cat ./dvdrip >> /tmp/dvdrip
   
   echo -e '#!/bin/bash'"\n" > /tmp/bdrip
   echo "user=\"${user}\"
@@ -87,7 +86,7 @@ outformat=\"${BD_outformat}\"" >> /tmp/bdrip
   
   echo -e '#!/bin/bash'"\n" > /tmp/autodisk
   echo "user=\"${user}\"" >> /tmp/autodisk
-  cat ./bdrip >> /tmp/autodisk
+  cat ./autodisk >> /tmp/autodisk
 
 
   install -c -D -m 755 /tmp/autodisk /usr/local/bin/

@@ -38,6 +38,7 @@ do
     title=${title:11}
     
     fileoutname="${discname}/${title}"
+    mkdir "${remotedir}/${discname}"
 
     if (( numFiles > 1 )); then
       fileoutname="${fileoutname}_$i"
