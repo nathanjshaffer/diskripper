@@ -42,7 +42,7 @@ if [[ $install == true ]]; then
  echo "install"
   apt-get install libdvd-pkg
   dpkg-reconfigure libdvd-pkg
-  apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd autofs abcde at flac
+  apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd autofs abcde at flac mkvtoolnix
   apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev
 
   systemctl enable --now atd
@@ -57,20 +57,20 @@ fi
 
 if [[ $install == true ]] || [[ $update == true ]]; then
 
-  wget -O https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/cdrip ./cdrip
-  wget -O https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/dvdrip ./dvdrip
-  wget -O https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/bdrip ./bdrip
-  wget -O https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/autodisk ./autodisk
+  wget -O ./cdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/cdrip
+  wget -O ./dvdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/dvdrip
+  wget -O ./bdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/bdrip
+  wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/autodisk
   
-  echo '#!/bin/bash'"\n" > tmp/cdrip
+  echo -e '#!/bin/bash'"\n" > /tmp/cdrip
   echo "user=\"${user}\"
 ripdir=\"${CD_ripdir}\"
 remotedir=\"${CD_remotedir}\"
-outformat=\"${CD_outformat}\"" >> tmp/cdrip
-  cat ./bdrip >> tmp/cdrip
+outformat=\"${CD_outformat}\"" >> /tmp/cdrip
+  cat ./bdrip >> /tmp/cdrip
   
   
-  echo '#!/bin/bash'"\n" > /tmp/dvdrip
+  echo '-e #!/bin/bash'"\n" > /tmp/dvdrip
   echo "user=\"${user}\"
 ripdir=\"${DVD_ripdir}\"
 remotedir=\"${DVD_remotedir}\"
@@ -78,7 +78,7 @@ outformat=\"${DVD_outformat}\"" >> /tmp/dvdrip
   cat ./bdrip >> /tmp/dvdrip
   
   
-  echo '#!/bin/bash'"\n" > /tmp/bdrip
+  echo -e '#!/bin/bash'"\n" > /tmp/bdrip
   echo "user=\"${user}\"
 ripdir=\"${BD_ripdir}\"
 remotedir=\"${BD_remotedir}\"
@@ -86,7 +86,7 @@ outformat=\"${BD_outformat}\"" >> /tmp/bdrip
   cat ./bdrip >> /tmp/bdrip
   
   
-  echo '#!/bin/bash'"\n" > /tmp/autodisk
+  echo -e '#!/bin/bash'"\n" > /tmp/autodisk
   echo "user=\"${user}\"" >> /tmp/autodisk
   cat ./bdrip >> /tmp/autodisk
 
@@ -96,10 +96,6 @@ outformat=\"${BD_outformat}\"" >> /tmp/bdrip
   install -c -D -m 755 /tmp/cdrip /usr/local/bin/
   install -c -D -m 755 /tmp/bdrip /usr/local/bin/
   
-  
-  
-
-  echo "update"
   
   if ! ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}";
   then

@@ -29,36 +29,28 @@ sleep 2;
 
 numFiles=`find $ripdir -maxdepth 1 -iname '*.${outformat}' -printf x | wc -c`
 
+i=1
+
 find $ripdir -maxdepth 1 -iname '*.${outformat}' -print0 | sort -z | while IFS= read -r -d '' file; 
 do 
-    namestatus=""
+   
+    title=$(mkvinfo "${file}" | grep Title)
+    title=${title:11}
+    
+    fileoutname="${discname}/${title}"
 
-    if [[ "$mkvname" == *"$-"* ]]; then
-
-        mkvname=${file#*$ripdir}
-        mkvname=${mkvname%%-*}
- 
-        mv "$logfile" "${logdir}${mkvname}.log"
-        logfile="${logdir}${mkvname}.log"
-        mkvname="${mkvname}"
-        namestatus="${outformat} name"
-    else
-        mkvname="${discname}"
-        namestatus="disc name"
-    fi
-
-    i=1
     if (( numFiles > 1 )); then
-      mkvname="${mkvname}_$i"
+      fileoutname="${fileoutname}_$i"
       ((i=i+1))
     fi
 
-    mkvname="${mkvname}.${outformat}"
-    echo "Renaming $file to ${mkvname}.${outformat}" >> "$logfile";
+    fileoutname="${fileoutname}.${outformat}"
+    
+    echo "Renaming $file to ${fileoutname}" >> "$logfile";
 
-    mv "$file" "${remotedir}${mkvname}"
+    mv "$file" "${remotedir}${fileoutname}"
 
-    echo "File = ${remotedir}${mkvname} ----  Disc = ${discname} ---- using:${namestatus}" >> "${logdir}riplist.txt"
+    echo "File = ${remotedir}${fileoutname} ----  Disc = ${discname} ---- using:${namestatus}" >> "${logdir}riplist.txt"
 done
 
 sleep 2 ;
