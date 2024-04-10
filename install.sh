@@ -65,8 +65,7 @@ if [[ $install == true ]] || [[ $update == true ]]; then
   echo -e '#!/bin/bash'"\n" > /tmp/cdrip
   echo "user=\"${user}\"
 ripdir=\"${CD_ripdir}\"
-remotedir=\"${CD_remotedir}\"
-outformat=\"${CD_outformat}\"" >> /tmp/cdrip
+remotedir=\"${CD_remotedir}\"" >> /tmp/cdrip
   cat ./bdrip >> /tmp/cdrip
   
   
