@@ -25,11 +25,13 @@ sleep 2;
 
 makemkvcon -r --progress=stdout --minlength=2500 --decrypt $outformat dev:$device all $ripdir >> "$logfile"; 
 
-exit 1
-
 sleep 2;
 
 # Rename Files
+
+if [ ! -d "${remotedir}/${discname}" ]; then
+  mkdir "${remotedir}/${discname}"
+fi
 
 numFiles=`find $ripdir -maxdepth 1 -iname "*.${outformat}" -printf x | wc -c`
 
@@ -42,7 +44,6 @@ do
     title=${title:11}
     
     fileoutname="${discname}/${title}"
-    mkdir "${remotedir}/${discname}"
 
     if (( numFiles > 1 )); then
       fileoutname="${fileoutname}_$i"
@@ -53,11 +54,11 @@ do
     
     echo "Renaming $file to ${fileoutname}" >> "$logfile";
     
-    ffmpeg -i "${file}" -c:v libx265 -crf 22 -preset veryfast -c:a aac -b:a 128k "${remotedir}${fileoutname}"
+    ffmpeg -i "${file}" -c:v libx265 -crf 22 -preset veryfast -c:a aac -b:a 128k "${remotedir}/${fileoutname}" >> "$logfile";
 
-#    mv "$file" "${remotedir}${fileoutname}"
+#    rm "$file" "${remotedir}${fileoutname}"
 
-    echo "File = ${remotedir}${fileoutname} ----  Disc = ${discname}" >> "${logdir}riplist.txt"
+    echo "File = ${remotedir}/${fileoutname} ----  Disc = ${discname}" >> "${logdir}riplist.txt"
 done
 
 sleep 2 ;
