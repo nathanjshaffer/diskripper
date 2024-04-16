@@ -40,25 +40,26 @@ i=1
 find $ripdir -maxdepth 1 -iname "*.${outformat}" -print0 | sort -z | while IFS= read -r -d '' file; 
 do 
 
-    title=$(mkvinfo "${file}" | grep Title)
-    title=${title:11}
-    
-    fileoutname="${discname}/${title}"
+  title=$(mkvinfo "${file}" | grep Title)
+  title=${title:11}
+  
+  fileoutname="${discname}/${title}"
 
-    if (( numFiles > 1 )); then
-      fileoutname="${fileoutname}_$i"
-      ((i=i+1))
-    fi
+  if (( numFiles > 1 )); then
+    fileoutname="${fileoutname}_$i"
+    ((i=i+1))
+  fi
 
-    fileoutname="${fileoutname}.${outformat}"
-    
-    echo "Renaming $file to ${fileoutname}" >> "$logfile";
-    
-     ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${remotedir}/${fileoutname}"
-
-#    rm "$file" "${remotedir}${fileoutname}"
-
-    echo "File = ${remotedir}/${fileoutname} ----  Disc = ${discname}" >> "${logdir}riplist.txt"
+  fileoutname="${fileoutname}.${outformat}"
+  
+  echo "Renaming $file to ${fileoutname}" >> "$logfile";
+  
+  ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${remotedir}/${fileoutname}" 2>> "$logfile";
+  RC=$?
+  if [ "${RC}" -ne "0" ]; then
+    rm "$file" "${remotedir}${fileoutname}"
+  fi
+  echo "File = ${remotedir}/${fileoutname} ----  Disc = ${discname}" >> "${logdir}riplist.txt"
 done
 
 sleep 2 ;
