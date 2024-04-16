@@ -54,7 +54,7 @@ do
     
     echo "Renaming $file to ${fileoutname}" >> "$logfile";
     
-    ffmpeg -i "${file}" -c:v libx265 -crf 22 -preset veryfast -c:a aac -b:a 128k "${remotedir}/${fileoutname}" >> "$logfile";
+     ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${remotedir}/${fileoutname}"
 
 #    rm "$file" "${remotedir}${fileoutname}"
 
