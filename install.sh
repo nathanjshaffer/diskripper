@@ -19,6 +19,7 @@ dlrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
+buildblurayinfo=false
 
 Help()
 {
@@ -33,6 +34,7 @@ Help()
    echo "f  opt<ver>    build and install ffmpeg.  optional version number."
    echo "m  opt<ver>    build and install makemkvcon. option version number."
    echo "n              build nv-codec for gpu acceleration."
+   echo "r              build bluray-info."
    echo
 }
 
@@ -89,7 +91,7 @@ if [[ $sysconf == true ]]; then
   apt-get install libdvd-pkg
   dpkg-reconfigure libdvd-pkg
   apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd autofs abcde at flac git
-  apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev
+  apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev libbluray-dev libbluray-bdj
 
   systemctl enable --now atd
   
@@ -199,4 +201,14 @@ if [ ! -d "./makemkv-bin-${makemkvVer}" ] && [[ $makemkv == true ]];
 fi
 
 
+
+if [[ $buildblurayinfo == true ]]; then
+  echo "build bluray-info"
+  pdir="$PWD"
+  mkdir ./bluray_info && cd ./bluray_info
+  git clone https://github.com/beandog/bluray_info.git
+  cd ./bluray_info
+  make && sudo make install
+  cd "$pdir"
+fi
 

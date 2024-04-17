@@ -26,7 +26,7 @@ sleep 2;
 mkdir "${ripdir}/${discname}"
 ripdir=${ripdir}/${discname}
 
-makemkvcon -r --progress=stdout --minlength=2500 --decrypt $outformat dev:$device all "$ripdir" >> "$logfile"; 
+makemkvcon -r --progress=stdout --minlength=1500 --decrypt $outformat dev:$device all "$ripdir" >> "$logfile"; 
 
 sleep 2;
 
@@ -48,7 +48,7 @@ do
   
   fileoutname="${discname}/${title}"
 
-  if (( numFiles > 1 )); then
+  if (( $numFiles > 1 )); then
     fileoutname="${fileoutname}_$i"
     ((i=i+1))
   fi
