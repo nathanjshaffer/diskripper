@@ -11,6 +11,8 @@ logdir=/home/${user}/.var/log/diskrip/bd/
 
 install -d -o $user -g $user ${logdir}
 
+echo "ripping disc " >> ${logdir}/.bdrip
+
 ripdirSuffix=""
 encdirSuffix=""
 episodeStartNum=0 
@@ -110,7 +112,7 @@ EncodeFiles()
           RC=$?
           if [ "${RC}" -eq "0" ]; then
           
-            else echo "removing $file" 
+            echo "removing $file" 
               #rm "$file" 
           fi
         fi  
@@ -133,14 +135,18 @@ RipDiskMode()
       case ${flag} in
         t)  titlenum=${OPTARG}
             shift 2 ;;
-        T)  test=true;;  
-        m)  move=true;;  
-        e)  encode=true;;  
+        T)  test=true
+            shift;;  
+        m)  move=true
+            shift;;  
+        e)  encode=true
+            shift;;  
       esac
   done
   
   device=$1
   GetDiscname
+  logfile="${logdir}${discname}.log"
   RipDisk
   if [[ $move == true ]] ||  [[ $encode == true ]] ; then
     CalcEncodeDir
