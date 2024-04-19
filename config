@@ -9,9 +9,10 @@ CD_ripdir=""
 CD_remotedir=""
 
 DVD_ripdirr=""
-DVD_remotedir=""
 DVD_outformat="mkv"
 
 BD_ripdir=""
-BD_remotedir=""
 BD_outformat="mkv"
+
+movie_outdir=""
+tv_outdir=""

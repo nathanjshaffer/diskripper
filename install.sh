@@ -1,4 +1,5 @@
 #!/bin/bash
+source ./config
 
 # see udev events - sudo udevadm monitor
 
@@ -10,8 +11,6 @@ if [ `id -u` -ne 0 ]
   exit
 fi
 
-source ./config
-
 
 sysconf=false
 update=false
@@ -19,7 +18,6 @@ dlrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
-buildblurayinfo=false
 
 Help()
 {
@@ -34,7 +32,6 @@ Help()
    echo "f  opt<ver>    build and install ffmpeg.  optional version number."
    echo "m  opt<ver>    build and install makemkvcon. option version number."
    echo "n              build nv-codec for gpu acceleration."
-   echo "r              build bluray-info."
    echo
 }
 
@@ -88,10 +85,11 @@ homedir="/home/${user}"
 
 if [[ $sysconf == true ]]; then
  echo "config system"
+  
   apt-get install libdvd-pkg
   dpkg-reconfigure libdvd-pkg
   apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd autofs abcde at flac git
-  apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev libbluray-dev libbluray-bdj
+  apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev
 
   systemctl enable --now atd
   
@@ -113,36 +111,15 @@ if [[ $bins == true ]]; then
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/autodisk
   fi  
   
-  echo -e '#!/bin/bash'"\n" > /tmp/cdrip
-  echo "user=\"${user}\"
-ripdir=\"${CD_ripdir}\"
-remotedir=\"${CD_remotedir}\"
-outformat=\"${CD_outformat}\"" >> /tmp/cdrip
-  cat ./cdrip >> /tmp/cdrip
-  
-  echo '-e #!/bin/bash'"\n" > /tmp/dvdrip
-  echo "user=\"${user}\"
-ripdir=\"${DVD_ripdir}\"
-remotedir=\"${DVD_remotedir}\"
-outformat=\"${DVD_outformat}\"" >> /tmp/dvdrip
-  cat ./dvdrip >> /tmp/dvdrip
-  
-  echo -e '#!/bin/bash'"\n" > /tmp/bdrip
-  echo "user=\"${user}\"
-ripdir=\"${BD_ripdir}\"
-remotedir=\"${BD_remotedir}\"
-outformat=\"${BD_outformat}\"" >> /tmp/bdrip
-  cat ./bdrip >> /tmp/bdrip
-  
-  
-  echo -e '#!/bin/bash'"\n" > /tmp/autodisk
-  echo "user=\"${user}\"" >> /tmp/autodisk
-  cat ./autodisk >> /tmp/autodisk
-
-  install -c -D -m 755 /tmp/autodisk /usr/local/bin/
-  install -c -D -m 755 /tmp/dvdrip /usr/local/bin/
-  install -c -D -m 755 /tmp/cdrip /usr/local/bin/
-  install -c -D -m 755 /tmp/bdrip /usr/local/bin/
+  if [ ! -f "./config" ]; then 
+    wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
+  fi
+    
+  install -D -t /usr/share/diskripper -m 755 ./config
+  install -c -D -m 755 ./autodisk /usr/local/bin/
+  install -c -D -m 755 ./dvdrip /usr/local/bin/
+  install -c -D -m 755 ./cdrip /usr/local/bin/
+  install -c -D -m 755 ./bdrip /usr/local/bin/
 fi
 
 if [[ $buildnvcodec == true ]]; then
@@ -155,52 +132,51 @@ if [[ $buildnvcodec == true ]]; then
   cd "$pdir"
 fi
 
+if [[ $ffmpeg == true ]]; then
+  if [ ! ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}" ]; then
+      echo "downloading ffmpeg"
+      
+      pdir="$PWD"
+      wget https://ffmpeg.org/releases/ffmpeg-${ffmpegVer}.tar.xz
+      tar -xvf ffmpeg-${ffmpegVer}.tar.xz
+      
+      cd ffmpeg-${ffmpegVer}
+      
+      ./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
+      make
+      make install
+      rm -rf /tmp/ffmpeg
 
-if  ! ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}" && [[ $ffmpeg == true ]] ;
-  then
-    echo "downloading ffmpeg"
-    
-    pdir="$PWD"
-    wget https://ffmpeg.org/releases/ffmpeg-${ffmpegVer}.tar.xz
-    tar -xvf ffmpeg-${ffmpegVer}.tar.xz
-    
-    cd ffmpeg-${ffmpegVer}
-    
-    ./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
-    make
-    make install
-    rm -rf /tmp/ffmpeg
-
-    cd "$pdir"
-  else
-    echo "ffmpeg is current version. Skipping..."
+      cd "$pdir"
+    else
+      echo "ffmpeg is current version. Skipping..."
+  fi
 fi
 
-if [ ! -d "./makemkv-bin-${makemkvVer}" ] && [[ $makemkv == true ]];
-  then
-    echo "downloading makemkv"
-    pdir="$PWD"
-    wget https://www.makemkv.com/download/makemkv-bin-${makemkvVer}.tar.gz
-    wget https://www.makemkv.com/download/makemkv-oss-${makemkvVer}.tar.gz
+if [[ $makemkv == true ]]; then
+  if [ ! -d "./makemkv-bin-${makemkvVer}" ]; then
+      echo "downloading makemkv"
+      pdir="$PWD"
+      wget https://www.makemkv.com/download/makemkv-bin-${makemkvVer}.tar.gz
+      wget https://www.makemkv.com/download/makemkv-oss-${makemkvVer}.tar.gz
 
-    tar -xvf makemkv-bin-${makemkvVer}.tar.gz
-    tar -xvf makemkv-oss-${makemkvVer}.tar.gz
+      tar -xvf makemkv-bin-${makemkvVer}.tar.gz
+      tar -xvf makemkv-oss-${makemkvVer}.tar.gz
 
-    cd makemkv-oss-${makemkvVer}
-    ./configure
-    make
-    make install
+      cd makemkv-oss-${makemkvVer}
+      ./configure
+      make
+      make install
 
-    cd ../makemkv-bin-${makemkvVer}
-    make
-    make install
+      cd ../makemkv-bin-${makemkvVer}
+      make
+      make install
 
-    cd "$pdir"
-  else
-    echo "makemkv is current version. Skipping..."
+      cd "$pdir"
+    else
+      echo "makemkv is current version. Skipping..."
+  fi
 fi
-
-
 
 if [[ $buildblurayinfo == true ]]; then
   echo "build bluray-info"
@@ -211,4 +187,6 @@ if [[ $buildblurayinfo == true ]]; then
   make && sudo make install
   cd "$pdir"
 fi
+
+
 

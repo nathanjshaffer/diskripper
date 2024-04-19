@@ -1,3 +1,11 @@
+#!/bin/bash
+source /usr/share/diskripper/config
+
+#set -x
+
+ripdir="${DVD_ripdir}"
+encdir="${movie_outdir}"
+outformat="${DVD_outformat}"
 
 device=$1
 
@@ -21,7 +29,7 @@ echo "ripping disc $discname" >> /home/${user}/.var/log/diskrip/.messages.log
 
 sleep 2;
 
-makemkvcon --progress=stdout --minlength=2500 --decrypt ${outformat} dev:$device all $ripdir >> "$logfile"; 
+makemkvcon --progress=stdout --minlength=2500 --decrypt mkv dev:$device all $ripdir >> "$logfile"; 
 
 sleep 2;
 
