@@ -1,69 +1,280 @@
 #!/bin/bash
 source /usr/share/diskripper/config
 
-#set -x
+#set -xv
 
 ripdir="${DVD_ripdir}"
 encdir="${movie_outdir}"
 outformat="${DVD_outformat}"
 
-device=$1
+logdir=/home/${user}/.var/log/diskrip/bd/
 
-echo `date '+%s'`" - starting dvdripper" >> /home/${user}/.var/log/diskrip/.messages.log
+install -d -o $user -g $user ${logdir}
 
-echo $device >> /home/${user}/.var/log/diskrip/.messages.log
+echo "ripping disc " >> ${logdir}/.bdrip
 
-logdir=/home/${user}/.var/log/diskrip/dvd/
+ripdirSuffix=""
+encdirSuffix=""
+episodeStartNum=0 
+  
 
-#####
+###################
 
-discname=$(blkid -o value -s LABEL $device)
-discname=$(tr '_' ' ' <<<"$discname")
-discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
-arr=( $discname )
-discname=${arr[@]^}
-logfile="${logdir}${discname}.log"
+GetDiscname()
+{
+    discname=$(blkid -o value -s LABEL $device)
+    discname=$(tr '_' ' ' <<<"$discname")
+    discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
+    arr=( $discname )
+    discname=${arr[@]^}
+}
 
-echo "ripping disc $discname" >> "$logfile"
-echo "ripping disc $discname" >> /home/${user}/.var/log/diskrip/.messages.log
+CalcEncodeDir()
+{
+  i=1
+  if [[ ripdirSuffix != "" ]]; then
+    encdirSuffix=$ripdirSuffix
+  else
+    while [ -d "${encdir}/${discname}${encdirSuffix}" ]; do
+      ((i=i+1))
+      encdirSuffix=".$i"
+    done
+  fi
+  
+  encdir="${encdir}/${discname}${encdirSuffix}"
+  install -d -o $user -g $user  "$encdir"
+}
 
-sleep 2;
+RipDisk()
+{
+  echo "ripping disc $discname" > "$logfile"
 
-makemkvcon --progress=stdout --minlength=2500 --decrypt mkv dev:$device all $ripdir >> "$logfile"; 
+  i=1
 
-sleep 2;
+  while [ -d "${ripdir}/${discname}${ripdirSuffix}" ]; do
+    ((i=i+1))
+    ripdirSuffix=".$i"
+  done
 
-# Rename Files
+  ripdir=${ripdir}/${discname}${ripdirSuffix}
+  install -d -o $user -g $user "$ripdir"
+  
+  if [[ $test == true ]]; then
+    echo "makemkvcon -r --progress=stdout --minlength=1500 --decrypt mkv dev:$device $titlenum \"$ripdir\""
+  else
+    makemkvcon -r --progress=stdout --minlength=1500 --decrypt mkv dev:$device $titlenum "$ripdir" >> "$logfile"; 
+    chown -R $user:$user "$ripdir"
+  fi
+  
+  sleep 2 ;
+}
 
-if [ ! -d "${remotedir}/${discname}" ]; then
-  mkdir "${remotedir}/${discname}"
-fi
 
-numFiles=`find $ripdir -maxdepth 1 -iname '*.${outformat}' -printf x | wc -c`
-
-i=1
-
-find $ripdir -maxdepth 1 -iname '*.${outformat}' -print0 | sort -z | while IFS= read -r -d '' file; 
-do 
-   
+EncodeFiles()
+{
+  IFS=',' read -ra encfiles <<< "$encFileNums"
+  
+  numFiles=`find "$ripdir" -maxdepth 1 -iname "*.${outformat}" -printf x | wc -c`
+  
+  if [[ $episodeStartNum > 0 ]]; then
+    e=$episodeStartNum
+  else
+    e=1
+  fi
+  
+  i=1
+    
+  while IFS= read -r -d $'\0' file; 
+  do 
+    if [[ $encFileNums != "" ]] && [[ ! ${encfiles[@]} =~ $i ]]; then
+      continue
+    fi
     title=$(mkvinfo "${file}" | grep Title)
     title=${title:11}
     
-    fileoutname="${discname}/${title}"
+    fileoutname="${title}"
 
-    if (( numFiles > 1 )); then
-      fileoutname="${fileoutname}_$i"
-      ((i=i+1))
+    if (( $numFiles > 1 )); then
+      fileoutname="${fileoutname}_$e"
+      ((e=e+1))
     fi
 
     fileoutname="${fileoutname}.${outformat}"
     
-    echo "Renaming $file to ${fileoutname}" >> "$logfile";
+    
+    if [[ $move == true ]]; then 
+      mv "$file" "${encdir}/${fileoutname}"
+    else 
+      if [[ $encode == true ]] ; then
+        echo "Encoding $file to ${fileoutname}" >> "$logfile";
+        
+        if [[ $test == true ]]; then
+          echo "ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i \"${file}\" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 \"${encdir}/${fileoutname}\""
+        else
+          ffmpeg -loglevel level -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${encdir}/${fileoutname}" 2> >(tee -a "$logfile");
+          RC=$?
+          if [ "${RC}" -eq "0" ]; then
+            echo "removing $file" 
+            rm "$file" 
+          fi
+        fi  
+      fi
+    fi
+    chown -R $user:$user "$encdir"
+    
+    echo "File = ${encdir}/${fileoutname} ----  Disc = ${discname}" >> "${logdir}riplist.txt"
+    
+    ((i=i+1))
+  done < <(find "$ripdir" -maxdepth 1 -iname "*.${outformat}" -print0 | sort -z)
+}
 
-    mv "$file" "${remotedir}/${fileoutname}"
+###################
 
-    echo "File = ${remotedir}/${fileoutname} ----  Disc = ${discname} ---- using:${namestatus}" >> "${logdir}riplist.txt"
-done
+RipDiskMode()
+{
+  titlenum="all"
+  encode=true
+  while getopts ":t:Tme" flag; do
+      case ${flag} in
+        t)  titlenum=${OPTARG}
+            shift 2 ;;
+        T)  test=true
+            shift;;  
+        m)  move=true
+            shift;;  
+        e)  encode=true
+            shift;;  
+      esac
+  done
+  
+  device=$1
+  GetDiscname
+  logfile="${logdir}${discname}.log"
+  RipDisk
+  if [[ $move == true ]] ||  [[ $encode == true ]] ; then
+    CalcEncodeDir
+    EncodeFiles
+  fi
+  eject -r $device
+}
 
-sleep 2 ;
-eject -r  $device
+EncodeMode()
+{
+  while getopts ":d:i:o:s:f:T" flag; do
+      case ${flag} in
+        d)  discname=${OPTARG};;
+        i)  indir=${OPTARG};;
+        o)  outdir=${OPTARG};;
+        s)  episodeStartNum=${OPTARG};;
+        f)  encFileNums=${OPTARG};;
+        T)  test=true;;  
+      esac
+  done
+  
+  logfile="${logdir}${discname}.log"
+  ripdir="${ripdir}/${indir}"
+  encdir="${encdir}/${outdir}"
+  install -d -o $user -g $user "$encdir"
+  encode=true
+  EncodeFiles
+}
+
+EpisodeRenameMode()
+{
+  while getopts ":i:n:s:T" flag; do
+      case ${flag} in
+        i)  inpaths=${OPTARG};;
+        n)  seriesName=${OPTARG};;
+        s)  season=${OPTARG};;
+        T)  test=true;;  
+      esac
+  done
+  
+  outdir="${tv_outdir}/${seriesName}/season ${season}"
+  install -d "$outdir"
+  
+  e=1
+  
+  IFS='|' read -ra paths <<< "$inpaths"
+  for in in "${paths[@]}"; do
+    numFiles=`find "$in" -maxdepth 1 -iname "*.${outformat}" -printf x | wc -c`
+    echo $e
+        
+    while IFS= read -r -d $'\0' file; 
+    do
+      if [[ $test == true ]]; then echo "mv \"$file\" \"${outdir}/${seriesName} - S${season}E${e}.${outformat}\""
+      else
+        mv "$file" "${outdir}/${seriesName} - S${season}E${e}.${outformat}"
+      fi
+      ((e=$e+1))
+    done < <(find "$in" -maxdepth 1 -iname "*.${outformat}" -print0 | sort -z)
+    
+  done
+}
+
+InfoMode()
+{ 
+  device=$1
+  makemkvcon --progress=stdout --minlength=1500 info dev:$device | grep ""
+}
+
+Help()
+{
+   # Display Help
+   echo -e "bdrip -h  Show this Help menu
+   bdrip [mode] [options] 
+
+Modes:
+
+  ripdisk [options] <dev>  - rips and optinally encodes/moves resulting files to new folder
+    options:
+      -T        -test rip, print makemkvcon command without ripping 
+      -t <int>  -title number - select title to rip
+      -m        -move ripped files without encoding
+      -e        -encode files to ouput
+
+    dev:        -specify device
+
+  encode [options]:        - encodes previously ripped files
+    options:
+      -T        -test encode, print ffmped command without encoding 
+      -d        -specify discname
+      -i <str>  -input directory
+      -o <str>  -output directory
+      -s <int>  -specify start file number squencing, default is 1
+      -f <int>  -specify files to encode. comma delimeted list numbers representing sort index in directory. 
+                    ex:  -f \"1,3,4\" . This will encode get the first, third and fourth file in directory.
+                    
+  episodes[options]:      -combines files in multiple folders to one season folder and renames them.
+                              Files are processed alphabeticaly in each directory, and each directory
+                              is process in the order passes ass argument
+                              ex: ripdisk episodes -n \"Friends\"Friends - -s \"1\"
+                                  results in file nameing: Friends/season 1/Friends S1E1.mkv
+                              
+      -T        -test move, print command without moving files
+      -i        -array of directory paths containing tv episodes. 
+                    ex. -i \"Friends Disc1|Friends Disc2\"
+      -n        -Name of TV show
+      -s        -Season number
+      
+  info <dev>:             -print makemkvcon info about disc
+    options:
+      -t        -print title info
+    dev:        -specify device
+    "
+}
+
+###################
+
+
+
+mode=$1
+shift
+
+case $mode in
+  -h)         Help;;
+  ripdisk)    RipDiskMode "${@}";;
+  encode)     EncodeMode  "${@}";;
+  episodes)   EpisodeRenameMode "${@}";;
+  "info")     InfoMode "${@}";;
+esac 
