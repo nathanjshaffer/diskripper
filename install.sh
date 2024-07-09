@@ -18,7 +18,7 @@ dlrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
-
+remotefs=false
 Help()
 {
    # Display Help
@@ -27,6 +27,7 @@ Help()
    echo "options:"
    echo "h              Print this Help."
    echo "s              configure systemfiles and apt packages."
+   echo "r path         setup remote nfs directory"
    echo "b              install ripping scripts."
    echo "d              download updated ripping scripts from repo."
    echo "f  opt<ver>    build and install ffmpeg.  optional version number."
@@ -45,7 +46,7 @@ getopts_get_optional_argument() {
   fi
 }
 
-while getopts ":hsbdfmn" flag
+while getopts ":hsbdfmnr:" flag
 do
   case ${flag} in
       
@@ -53,6 +54,7 @@ do
        Help
        exit;;
     s) sysconf=true;;
+    r) remotefs=${OPTARG};;
     b) bins=true;;
     d) dlrepo=true;;
     f) ffmpeg=true
@@ -85,10 +87,11 @@ homedir="/home/${user}"
 
 if [[ $sysconf == true ]]; then
  echo "config system"
-  
+ 
+  apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
   apt-get install libdvd-pkg
   dpkg-reconfigure libdvd-pkg
-  apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd autofs abcde at flac git
+  apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd abcde at flac git
   apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev
 
   systemctl enable --now atd
@@ -96,8 +99,22 @@ if [[ $sysconf == true ]]; then
   echo 'SUBSYSTEM=="block", ENV{ID_CDROM}=="1", ENV{ID_TYPE}=="cd", ACTION=="change", RUN+="/usr/local/bin/autodisk '"'"'%E(DEVNAME)'"'"'"' | tee /etc/udev/rules.d/autodisk.rules
 
   udevadm control --reload
+  
 
 fi
+
+if [[ $remotefs != false ]]; then
+
+  apt-get install autofs
+  echo "/nfs   /etc/auto.nfs" >> /etc/auto.master
+  echo "diskripremote   -fstype=nfs4   $remotefs" > /etc/auto.nfs
+  
+  sed -i 's/NEED_IDMAPD=/NEED_IDMAPD=yes/' /etc/default/nfs-common
+  service autofs reload
+  ls /nfs/diskripremote
+
+fi
+
 
 if [[ $bins == true ]]; then
 
@@ -107,7 +124,6 @@ if [[ $bins == true ]]; then
     echo "download binaries from repo"
     wget -O ./cdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/cdrip
     wget -O ./dvdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/dvdrip
-    wget -O ./bdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/bdrip
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/autodisk
   fi  
   
@@ -119,7 +135,6 @@ if [[ $bins == true ]]; then
   install -c -D -m 755 ./autodisk /usr/local/bin/
   install -c -D -m 755 ./dvdrip /usr/local/bin/
   install -c -D -m 755 ./cdrip /usr/local/bin/
-  install -c -D -m 755 ./bdrip /usr/local/bin/
 fi
 
 if [[ $buildnvcodec == true ]]; then
@@ -133,7 +148,7 @@ if [[ $buildnvcodec == true ]]; then
 fi
 
 if [[ $ffmpeg == true ]]; then
-  if [ ! ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}" ]; then
+  if [[ `command -v ffmpeg` == "" || ! `ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}"` ]]; then
       echo "downloading ffmpeg"
       
       pdir="$PWD"

@@ -4,14 +4,14 @@ source /usr/share/diskripper/config
 echo "autodisk " `date '+%s'` "$DEVNAME \n" > /home/${user}/.var/log/diskrip/.messages.log
 {
   if [ "$ID_CDROM_MEDIA_BD" -eq "1" ]; then
-    echo bdrip ripdisk -e $DEVNAME | at now
+    echo dvdrip ripdisk -e $DEVNAME | at now
     #echo "BD insert" > "/home/${user}/.var/log/diskrip/.insert" 
     exit 1
   fi
 }
 {
   if [ "$ID_CDROM_MEDIA_DVD" -eq "1" ]; then
-    echo bdrip ripdisk -m $DEVNAME | at now
+    echo dvdrip ripdisk -m $DEVNAME | at now
     #echo "dvd insert" > "/home/${user}/.var/log/diskrip/.insert" 
   fi
 }
