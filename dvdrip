@@ -92,6 +92,10 @@ EncodeFiles()
     title=$(mkvinfo "${file}" | grep Title)
     title=${title:11}
     
+    if [[ $title == "" ]]; then
+      title=${discname}${encdirSuffix}
+    fi
+    
     fileoutname="${title}"
 
     if (( $numFiles > 1 )); then
