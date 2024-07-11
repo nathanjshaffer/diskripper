@@ -145,6 +145,22 @@ if [[ $buildnvcodec == true ]]; then
   cd nv-codec-headers
   make && sudo make install
   cd "$pdir"
+  
+  apt-get install linux-headers-$(uname -r)
+  apt-key del 7fa2af80
+  wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+  dpkg -i cuda-keyring_1.1-1_all.deb
+  apt-get update
+  apt-get install cuda-toolkit
+  apt-get install nvidia-gds
+  
+  apt-get install linux-modules-extra-$(uname -r)-nvidia
+  
+  #wget http://security.ubuntu.com/ubuntu/pool/main/l/linux-nvidia/linux-modules-extra-$(uname -r)-nvidia_xxx_amd64.deb
+  
+  echo "Make sure linux-modules-extra-$(uname -r)-nvidia is installed, then reboot to finish setup"
+  
+  #reboot
 fi
 
 if [[ $ffmpeg == true ]]; then
@@ -157,7 +173,8 @@ if [[ $ffmpeg == true ]]; then
       
       cd ffmpeg-${ffmpegVer}
       
-      ./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
+      #./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
+      ./configure --enable-nonfree --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
       make
       make install
       rm -rf /tmp/ffmpeg
