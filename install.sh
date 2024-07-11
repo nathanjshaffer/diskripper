@@ -131,7 +131,7 @@ if [[ $bins == true ]]; then
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
   fi
     
-  install -D -t /usr/share/diskripper -m 755 ./config
+  install -D -m 755 -t  /usr/share/diskripper ./config
   install -c -D -m 755 ./autodisk /usr/local/bin/
   install -c -D -m 755 ./dvdrip /usr/local/bin/
   install -c -D -m 755 ./cdrip /usr/local/bin/
@@ -153,6 +153,7 @@ if [[ $buildnvcodec == true ]]; then
   apt-get update
   apt-get install cuda-toolkit
   apt-get install nvidia-gds
+  apt-get  install nvidia-utils-550-server
   
   apt-get install linux-modules-extra-$(uname -r)-nvidia
   
@@ -160,12 +161,12 @@ if [[ $buildnvcodec == true ]]; then
   
   echo "Make sure linux-modules-extra-$(uname -r)-nvidia is installed, then reboot to finish setup"
   
-  #reboot
+  #after reboot export PATH=/usr/local/cuda-12.4/bin${PATH:+:${PATH}}
 fi
 
 if [[ $ffmpeg == true ]]; then
   if [[ `command -v ffmpeg` == "" || ! `ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}"` ]]; then
-      echo "downloading ffmpeg"
+      echo "downloading ffmpeg Ver. ${ffmpegVer}"
       
       pdir="$PWD"
       wget https://ffmpeg.org/releases/ffmpeg-${ffmpegVer}.tar.xz
@@ -174,7 +175,7 @@ if [[ $ffmpeg == true ]]; then
       cd ffmpeg-${ffmpegVer}
       
       #./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
-      ./configure --enable-nonfree --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
+      ./configure --enable-nonfree --enable-libx264 --enable-libx265 --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
       make
       make install
       rm -rf /tmp/ffmpeg
