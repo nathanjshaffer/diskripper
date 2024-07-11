@@ -11,7 +11,7 @@ if [ `id -u` -ne 0 ]
   exit
 fi
 
-
+config=false
 sysconf=false
 update=false
 dlrepo=false
@@ -26,6 +26,7 @@ Help()
    echo
    echo "options:"
    echo "h              Print this Help."
+   echo "c              create config files"
    echo "s              configure systemfiles and apt packages."
    echo "r path         setup remote nfs directory"
    echo "b              install ripping scripts."
@@ -46,20 +47,23 @@ getopts_get_optional_argument() {
   fi
 }
 
-while getopts ":hsbdfmnr:" flag
+while getopts ":hcsbdfmnr:" flag
 do
   case ${flag} in
       
     h) # display Help
        Help
        exit;;
+    c) config=true;;
     s) sysconf=true;;
     r) remotefs=${OPTARG};;
     b) bins=true;;
     d) dlrepo=true;;
     f) ffmpeg=true
        getopts_get_optional_argument $@
-       ffmpegVer=${OPTARG};;
+       if [[ ${OPTARG} != "" ]]; then
+       ffmpegVer=${OPTARG}
+       fi ;;
     
     m) makemkv=true
        getopts_get_optional_argument $@ 
@@ -86,6 +90,22 @@ fi
 homedir="/home/${user}"
 
 if [[ $sysconf == true ]]; then
+config_system
+fi
+
+if [[ $remotefs == false ]]; then
+setup_remote_fs
+fi
+
+if [[ $bins == true ]]; then
+download_binaries
+fi
+
+if [[ $buildnvcodec == true ]]; then
+build_nv_codec
+fi
+
+config_system(){
  echo "config system"
  
   apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
@@ -99,12 +119,11 @@ if [[ $sysconf == true ]]; then
   echo 'SUBSYSTEM=="block", ENV{ID_CDROM}=="1", ENV{ID_TYPE}=="cd", ACTION=="change", RUN+="/usr/local/bin/autodisk '"'"'%E(DEVNAME)'"'"'"' | tee /etc/udev/rules.d/autodisk.rules
 
   udevadm control --reload
+
+}
   
 
-fi
-
-if [[ $remotefs != false ]]; then
-
+setup_remote_fs(){
   apt-get install autofs
   echo "/nfs   /etc/auto.nfs" >> /etc/auto.master
   echo "diskripremote   -fstype=nfs4   $remotefs" > /etc/auto.nfs
@@ -112,12 +131,11 @@ if [[ $remotefs != false ]]; then
   sed -i 's/NEED_IDMAPD=/NEED_IDMAPD=yes/' /etc/default/nfs-common
   service autofs reload
   ls /nfs/diskripremote
+}
 
-fi
 
 
-if [[ $bins == true ]]; then
-
+download_binaries(){
   echo "install binaries"
   
   if [[ $dlrepo == true ]]; then
@@ -135,9 +153,11 @@ if [[ $bins == true ]]; then
   install -c -D -m 755 ./autodisk /usr/local/bin/
   install -c -D -m 755 ./dvdrip /usr/local/bin/
   install -c -D -m 755 ./cdrip /usr/local/bin/
-fi
 
-if [[ $buildnvcodec == true ]]; then
+}
+
+build_nv_codec(){
+
   echo "build nv-codec"
   pdir="$PWD"
   mkdir ./nv-codec-headers_build && cd ./nv-codec-headers_build
@@ -154,36 +174,38 @@ if [[ $buildnvcodec == true ]]; then
   apt-get install cuda-toolkit
   apt-get install nvidia-gds
   apt-get  install nvidia-utils-550-server
+  apt-get install libnvidia-decode-550-server
+  apt-get install libnvidia-encode-550-server
   
   apt-get install linux-modules-extra-$(uname -r)-nvidia
   
   #wget http://security.ubuntu.com/ubuntu/pool/main/l/linux-nvidia/linux-modules-extra-$(uname -r)-nvidia_xxx_amd64.deb
   
   echo "Make sure linux-modules-extra-$(uname -r)-nvidia is installed, then reboot to finish setup"
+
+}
   
-  #after reboot export PATH=/usr/local/cuda-12.4/bin${PATH:+:${PATH}}
-fi
 
 if [[ $ffmpeg == true ]]; then
-  if [[ `command -v ffmpeg` == "" || ! `ffmpeg -version | grep -q "ffmpeg version ${ffmpegVer}"` ]]; then
+  if if test -f ./ffmpeg-${ffmpegVer}.tar.xz; then
       echo "downloading ffmpeg Ver. ${ffmpegVer}"
-      
-      pdir="$PWD"
       wget https://ffmpeg.org/releases/ffmpeg-${ffmpegVer}.tar.xz
+  fi
+      pdir="$PWD"
       tar -xvf ffmpeg-${ffmpegVer}.tar.xz
       
       cd ffmpeg-${ffmpegVer}
       
-      #./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
-      ./configure --enable-nonfree --enable-libx264 --enable-libx265 --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
+      export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+
+      ./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
+      #./configure --enable-nonfree --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
+      
       make
       make install
       rm -rf /tmp/ffmpeg
-
+      ldconfig
       cd "$pdir"
-    else
-      echo "ffmpeg is current version. Skipping..."
-  fi
 fi
 
 if [[ $makemkv == true ]]; then
