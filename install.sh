@@ -113,6 +113,7 @@ config_system(){
   dpkg-reconfigure libdvd-pkg
   apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd abcde at flac git
   apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev
+  apt-get install mkvtoolnix
 
   systemctl enable --now atd
   
