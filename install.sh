@@ -14,7 +14,7 @@ fi
 config=false
 sysconf=false
 update=false
-dlrepo=false
+getrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
@@ -47,7 +47,7 @@ getopts_get_optional_argument() {
   fi
 }
 
-while getopts ":hcsbdfmnr:" flag
+while getopts ":ihcsbgfmnr:" flag
 do
   case ${flag} in
       
@@ -58,7 +58,7 @@ do
     s) sysconf=true;;
     r) remotefs=${OPTARG};;
     b) bins=true;;
-    d) dlrepo=true;;
+    g) getrepo=true;;
     f) ffmpeg=true
        getopts_get_optional_argument $@
        if [[ ${OPTARG} != "" ]]; then
@@ -83,7 +83,7 @@ then
   
   sysconf=true
   update=true
-  dlrepo=true
+  bins=true
   buildnvcodec=true
   makemkv=true
   ffmpeg=true
@@ -94,8 +94,17 @@ if [[ $config == true ]]; then
 config_file
 fi
 
-homedir="/home/${user}"
-
+if [[ $useconfiginstall == true ]]; then
+  if [[ hardware_encoding == true ]]; then
+    buildnvcodec=true
+  fi
+  sysconf=true
+  update=true
+  bins=true
+  getrepo=true
+  makemkv=true
+  ffmpeg=true
+fi
 
 if [[ $sysconf == true ]]; then
 config_system
@@ -135,19 +144,22 @@ if [[ setoption == "y" ]]; then
   read -p "Enter directory:" DVD_ripdir
 fi
 #####
-
-read -p "Set directory to move video files after conversion/naming? <y/n> " setoption
+read -p "directory to move video files after conversion/naming? <y/n> " setoption
 
 if [[ setoption == "y" ]]; then
-  read -p "Enter User:" user
+  read -p "Enter directory:" movie_outdir
 fi
 #####
 
-read -p "Set User for file ownership? <y/n> " setoption
+  rep_str=`grep "user" ./dvdrip`
+  sed -i "s/$rep_str/user=$user/" ./config
 
-if [[ setoption == "y" ]]; then
-  read -p "Enter User:" user
-fi
+  rep_str=`grep "DVD_ripdir" ./dvdrip`
+  sed -i "s/$rep_str/DVD_ripdir=$DVD_ripdir/" ./config
+
+  rep_str=`grep "movie_outdir" ./dvdrip`
+  sed -i "s/$rep_str/movie_outdir=$movie_outdir/" ./config
+
 #####
 
 }
@@ -186,7 +198,7 @@ setup_remote_fs(){
 install_binaries(){
   echo "install binaries"
   
-  if [[ $dlrepo == true ]]; then
+  if [[ $getrepo == true ]]; then
     echo "download binaries from repo"
     wget -O ./cdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/cdrip
     wget -O ./dvdrip https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/dvdrip
@@ -196,11 +208,6 @@ install_binaries(){
   if [ ! -f "./config" ]; then 
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
   fi
-  
-#  old_ffmpeg_str=`grep "          ffmpeg" ./dvdrip`
-#  echo $old_ffmpeg_str
-#  sed -i "s/$old_ffmpeg_str/          $ffmpeg_string/" ./dvdrip
-  #ffmpeg_string
     
   install -D -m 755 -t  /usr/share/diskripper ./config
   install -c -D -m 755 ./autodisk /usr/local/bin/
@@ -251,8 +258,12 @@ if [[ $ffmpeg == true ]]; then
       
       export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
 
-      ./configure --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc
-      #./configure --enable-nonfree --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
+      
+      if [[ hardware_encoding == true ]]; then
+        ./configure --enable-nonfree --enable-gpl --enable-libx264 --enable-libx265 --enable-nvenc --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared 
+        else
+        ./configure --enable-gpl --enable-libx264 --enable-libx265
+      fi
       
       make
       make install
