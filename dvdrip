@@ -113,9 +113,11 @@ EncodeFiles()
         echo "Encoding $file to ${fileoutname}" >> "$logfile";
         
         if [[ $test == true ]]; then
-          echo "ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i \"${file}\" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 \"${encdir}/${fileoutname}\""
+          eval "echo \"$ffmpeg_string\""
+#          echo "ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i \"${file}\" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 \"${encdir}/${fileoutname}\""
         else
-          ffmpeg -loglevel level -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${encdir}/${fileoutname}" 2> >(tee -a "$logfile");
+          eval "$ffmpeg_string"  2> >(tee -a "$logfile");
+          #ffmpeg -loglevel level -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${encdir}/${fileoutname}" 2> >(tee -a "$logfile");
           RC=$?
           if [ "${RC}" -eq "0" ]; then
             echo "removing $file" 
@@ -130,6 +132,8 @@ EncodeFiles()
     
     ((i=i+1))
   done < <(find "$ripdir" -maxdepth 1 -iname "*.${outformat}" -print0 | sort -z)
+  
+  rmdir ${encdir}
 }
 
 ###################

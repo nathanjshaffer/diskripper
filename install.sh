@@ -29,7 +29,7 @@ Help()
    echo "c              create config files"
    echo "s              configure systemfiles and apt packages."
    echo "r path         setup remote nfs directory"
-   echo "b              install ripping scripts."
+   echo "b              install ripping scripts to system directory."
    echo "d              download updated ripping scripts from repo."
    echo "f  opt<ver>    build and install ffmpeg.  optional version number."
    echo "m  opt<ver>    build and install makemkvcon. option version number."
@@ -75,6 +75,8 @@ do
   esac
 done
 
+
+
 if [ "$opt" = "?" ]
 then
   echo "Default option executed (by default)"
@@ -87,7 +89,13 @@ then
   ffmpeg=true
 fi
 
+
+if [[ $config == true ]]; then
+config_file
+fi
+
 homedir="/home/${user}"
+
 
 if [[ $sysconf == true ]]; then
 config_system
@@ -98,12 +106,51 @@ setup_remote_fs
 fi
 
 if [[ $bins == true ]]; then
-download_binaries
+install_binaries
 fi
 
 if [[ $buildnvcodec == true ]]; then
 build_nv_codec
 fi
+
+config_file(){
+
+echo "Setting up config options:"
+
+
+if [ ! -f "./config" ]; then 
+  wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
+fi
+
+read -p "Set User for file ownership? <y/n> " setoption
+
+if [[ setoption == "y" ]]; then
+  read -p "Enter User:" user
+fi
+
+#####
+read -p "Set directory to rip raw files into before processing? <y/n> " setoption
+
+if [[ setoption == "y" ]]; then
+  read -p "Enter directory:" DVD_ripdir
+fi
+#####
+
+read -p "Set directory to move video files after conversion/naming? <y/n> " setoption
+
+if [[ setoption == "y" ]]; then
+  read -p "Enter User:" user
+fi
+#####
+
+read -p "Set User for file ownership? <y/n> " setoption
+
+if [[ setoption == "y" ]]; then
+  read -p "Enter User:" user
+fi
+#####
+
+}
 
 config_system(){
  echo "config system"
@@ -136,7 +183,7 @@ setup_remote_fs(){
 
 
 
-download_binaries(){
+install_binaries(){
   echo "install binaries"
   
   if [[ $dlrepo == true ]]; then
@@ -149,6 +196,11 @@ download_binaries(){
   if [ ! -f "./config" ]; then 
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
   fi
+  
+#  old_ffmpeg_str=`grep "          ffmpeg" ./dvdrip`
+#  echo $old_ffmpeg_str
+#  sed -i "s/$old_ffmpeg_str/          $ffmpeg_string/" ./dvdrip
+  #ffmpeg_string
     
   install -D -m 755 -t  /usr/share/diskripper ./config
   install -c -D -m 755 ./autodisk /usr/local/bin/
@@ -174,7 +226,7 @@ build_nv_codec(){
   apt-get update
   apt-get install cuda-toolkit
   apt-get install nvidia-gds
-  apt-get  install nvidia-utils-550-server
+  apt-get install nvidia-utils-550-server
   apt-get install libnvidia-decode-550-server
   apt-get install libnvidia-encode-550-server
   

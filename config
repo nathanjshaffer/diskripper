@@ -1,14 +1,19 @@
 
 ffmpegVer=7.0
 makemkvVer=1.17.6
+ffmpeg_string='ffmpeg -loglevel level -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${encdir}/${fileoutname}"'
 
+user for video file ownership
 user=""
 
 CD_ripdir=""
 CD_remotedir=""
 
+# directory to rip raw files into before processing
 DVD_ripdir=""
 DVD_outformat="mkv"
 
+#directory to move video files after conversion/naming
 movie_outdir=""
+
 tv_outdir=""
