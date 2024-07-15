@@ -12,9 +12,12 @@ discname=$(tr '_' ' ' <<<"$discname")
 discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
 arr=( $discname )
 discname=${arr[@]^}
-logfile="${discname}.log"
+logfile="/home/${user}/.var/log/diskrip/cd/${discname}.log"
+
+install -d -o $user -g $user ${logdir}
+
 sleep 10
 
-echo `date '+%s'` >> /home/${user}/.var/log/diskrip/cd/$logfile
+echo `date '+%s'` >> $logfile
 
 abcde -d $device >> $logfile
