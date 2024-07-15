@@ -17,7 +17,7 @@ getrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
-remotefs=false
+remotefs=""
 Help()
 {
    # Display Help
@@ -210,6 +210,8 @@ install_binaries() {
   if [ ! -f "./config" ]; then 
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
   fi
+  
+  chown -R $user:$user ./
     
   install -D -m 755 -t  /usr/share/diskripper ./config
   install -c -D -m 755 ./autodisk /usr/local/bin/
@@ -303,7 +305,7 @@ if [[ $sysconf == true ]]; then
 config_system
 fi
 
-if [[ $remotefs == false ]]; then
+if [[ $remotefs != false ]]; then
 setup_remote_fs
 fi
 
