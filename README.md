@@ -35,16 +35,17 @@ The system currently can't discern between TV and Movie discs.  To help with tha
 
   dvdrip episodes 
   usage:
+ 
     -T        -test move, print command without moving files
-    -i        -array of directory paths containing tv episodes. 
-                  ex. -i \"Friends Disc1|Friends Disc2\"
+    -i        -array of directory paths containing tv episodes.
+                  ex. -i "/movie_path_/Friends Disc1|/movie_path_/Friends Disc2"
     -n        -Name of TV show
     -s        -Season number
     
   example:
-    if you have a season of friends in the directory */movie_folder/Friends/Friends-Disc1* and */movie_folder/Friends/Friends-Disc2*, then run the command:
+    if you have a season of friends in the directory */movie_path_/Friends/Friends-Disc1* and */movie_path_/Friends/Friends-Disc2*, then run the command:
 ```
- dvdrip episodes -n "Friends" -i "/movie_folder/Friends/Friends-Disc1|/movie_folder/Friends/Friends-Disc2" -s "1"
+ dvdrip episodes -n "Friends" -i "/movie_path_/Friends/Friends-Disc1|/movie_path_/Friends/Friends-Disc2" -s "1"
 ```
                                   
 Directories will be processed in the order given and files will be processed in order alphabetically within each directory.  
@@ -53,4 +54,4 @@ This results in file naming:
   */tv_outdir/Friends/season 1/Friends S1E2.mkv*
   *...*
 
-*tv_folder* is defined in the config file.
+*tv_outdir* is defined in the config file.
