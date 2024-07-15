@@ -1,6 +1,8 @@
 #!/bin/bash
 source /usr/share/diskripper/config
 
+su ${user}
+
 #set -x
 
 device=$1
@@ -15,4 +17,4 @@ sleep 10
 
 echo `date '+%s'` >> /home/${user}/.var/log/diskrip/cd/$logfile
 
-abcde >> $logfile
+abcde -d $device >> $logfile

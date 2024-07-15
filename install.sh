@@ -144,21 +144,32 @@ if [[ setoption == "y" ]]; then
   read -p "Enter directory:" DVD_ripdir
 fi
 #####
-read -p "directory to move video files after conversion/naming? <y/n> " setoption
+read -p "Set directory to move video files after conversion/naming? <y/n> " setoption
 
 if [[ setoption == "y" ]]; then
   read -p "Enter directory:" movie_outdir
 fi
 #####
+read -p "Set Directory abcde should rip files to? <y/n> " setoption
 
-  rep_str=`grep "user" ./dvdrip`
+if [[ setoption == "y" ]]; then
+  read -p "Enter directory:" CD_ripdir
+fi
+#####
+
+
+
+  rep_str=`grep "user" ./config`
   sed -i "s/$rep_str/user=$user/" ./config
 
-  rep_str=`grep "DVD_ripdir" ./dvdrip`
+  rep_str=`grep "DVD_ripdir" ./config`
   sed -i "s/$rep_str/DVD_ripdir=$DVD_ripdir/" ./config
 
-  rep_str=`grep "movie_outdir" ./dvdrip`
+  rep_str=`grep "movie_outdir" ./config`
   sed -i "s/$rep_str/movie_outdir=$movie_outdir/" ./config
+
+  rep_str=`grep "CD_ripdir" ./config`
+  sed -i "s/$rep_str/CD_ripdir=$CD_ripdir/" ./config
 
 #####
 
@@ -179,6 +190,14 @@ config_system(){
   echo 'SUBSYSTEM=="block", ENV{ID_CDROM}=="1", ENV{ID_TYPE}=="cd", ACTION=="change", RUN+="/usr/local/bin/autodisk '"'"'%E(DEVNAME)'"'"'"' | tee /etc/udev/rules.d/autodisk.rules
 
   udevadm control --reload
+  
+  echo "PADTRACKS=n
+OUTPUTTYPE=flac
+OUTPUTDIR=$CD_ripdir
+EJECTCD=y
+INTERACTIVE=n" > /home/$user/.abcde.conf
+
+
 
 }
   

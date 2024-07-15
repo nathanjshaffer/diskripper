@@ -6,8 +6,8 @@ ffmpeg_string='ffmpeg -loglevel level -nostdin -y -hwaccel cuda -hwaccel_output_
 user for video file ownership
 user=""
 
+# Directory abcde should rip files to
 CD_ripdir=""
-CD_remotedir=""
 
 # directory to rip raw files into before processing
 DVD_ripdir=""
