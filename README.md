@@ -20,7 +20,7 @@ sudo ./install.sh -i
 ```
 To only download and reinstall updated bash scripts from the repo:
 ```
-sudo ./install.sh -bd
+sudo ./install.sh -bg
 ```
 
 To download, build and install ffmpeg:
