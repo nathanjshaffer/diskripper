@@ -256,8 +256,8 @@ Modes:
   episodes[options]:      -combines files in multiple folders to one season folder and renames them.
                               Files are processed alphabeticaly in each directory, and each directory
                               is process in the order passes ass argument
-                              ex: ripdisk episodes -n \"Friends\"Friends - -s \"1\"
-                                  results in file nameing: Friends/season 1/Friends S1E1.mkv
+                              ex: dvdrip episodes -n \"Friends\" -i \"Friends/Friends-Disc1\" -s \"1\"
+                                  results in file naming: Friends/season 1/Friends S1E1.mkv
                               
       -T        -test move, print command without moving files
       -i        -array of directory paths containing tv episodes. 
