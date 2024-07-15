@@ -16,6 +16,6 @@ install -o $user -g $user -d /home/${user}/.var/log/diskrip/cd/
 
 sleep 2
 
-runuser -l $user -c "echo `date '+%s'` > $logfile"
+echo `date '+%s'` > $logfile
 
-runuser -l $user -c "abcde -d $device >> $logfile"
+abcde -d $device >> $logfile
