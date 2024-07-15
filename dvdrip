@@ -11,7 +11,7 @@ logdir=/home/${user}/.var/log/diskrip/bd/
 
 install -d -o $user -g $user ${logdir}
 
-echo "ripping disc " >> ${logdir}/.bdrip
+echo "ripping disc " >> ${logdir}/.dvdrip
 
 ripdirSuffix=""
 encdirSuffix=""

@@ -1,8 +1,6 @@
 #!/bin/bash
 source /usr/share/diskripper/config
 
-su ${user}
-
 #set -x
 
 device=$1
@@ -12,9 +10,12 @@ discname=$(tr '_' ' ' <<<"$discname")
 discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
 arr=( $discname )
 discname=${arr[@]^}
-logfile="${discname}.log"
-sleep 10
+logfile="/home/${user}/.var/log/diskrip/cd/${discname}.log"
 
-echo `date '+%s'` >> /home/${user}/.var/log/diskrip/cd/$logfile
+install -o $user -g $user -d /home/${user}/.var/log/diskrip/cd/
+
+sleep 2
+
+echo `date '+%s'` > $logfile
 
 abcde -d $device >> $logfile

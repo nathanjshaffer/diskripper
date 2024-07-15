@@ -1,6 +1,5 @@
 #!/bin/bash
 source ./config
-
 # see udev events - sudo udevadm monitor
 
 # lookup udev variables - udevadm info --query=all --name=/dev/#name
@@ -18,7 +17,7 @@ getrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
-remotefs=false
+remotefs=""
 Help()
 {
    # Display Help
@@ -106,23 +105,7 @@ if [[ $useconfiginstall == true ]]; then
   ffmpeg=true
 fi
 
-if [[ $sysconf == true ]]; then
-config_system
-fi
-
-if [[ $remotefs == false ]]; then
-setup_remote_fs
-fi
-
-if [[ $bins == true ]]; then
-install_binaries
-fi
-
-if [[ $buildnvcodec == true ]]; then
-build_nv_codec
-fi
-
-config_file(){
+config_file() {
 
 echo "Setting up config options:"
 
@@ -175,7 +158,7 @@ fi
 
 }
 
-config_system(){
+config_system() {
  echo "config system"
  
   apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
@@ -202,7 +185,7 @@ INTERACTIVE=n" > /home/$user/.abcde.conf
 }
   
 
-setup_remote_fs(){
+setup_remote_fs() {
   apt-get install autofs
   echo "/nfs   /etc/auto.nfs" >> /etc/auto.master
   echo "diskripremote   -fstype=nfs4   $remotefs" > /etc/auto.nfs
@@ -214,7 +197,7 @@ setup_remote_fs(){
 
 
 
-install_binaries(){
+install_binaries() {
   echo "install binaries"
   
   if [[ $getrepo == true ]]; then
@@ -227,6 +210,8 @@ install_binaries(){
   if [ ! -f "./config" ]; then 
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
   fi
+  
+  chown -R $user:$user ./
     
   install -D -m 755 -t  /usr/share/diskripper ./config
   install -c -D -m 755 ./autodisk /usr/local/bin/
@@ -235,7 +220,7 @@ install_binaries(){
 
 }
 
-build_nv_codec(){
+build_nv_codec() {
 
   echo "build nv-codec"
   pdir="$PWD"
@@ -263,10 +248,9 @@ build_nv_codec(){
   echo "Make sure linux-modules-extra-$(uname -r)-nvidia is installed, then reboot to finish setup"
 
 }
-  
 
-if [[ $ffmpeg == true ]]; then
-  if if test -f ./ffmpeg-${ffmpegVer}.tar.xz; then
+install_ffmpeg() {
+if test -f ./ffmpeg-${ffmpegVer}.tar.xz; then
       echo "downloading ffmpeg Ver. ${ffmpegVer}"
       wget https://ffmpeg.org/releases/ffmpeg-${ffmpegVer}.tar.xz
   fi
@@ -289,9 +273,9 @@ if [[ $ffmpeg == true ]]; then
       rm -rf /tmp/ffmpeg
       ldconfig
       cd "$pdir"
-fi
+}
 
-if [[ $makemkv == true ]]; then
+install_makemkv() {
   if [ ! -d "./makemkv-bin-${makemkvVer}" ]; then
       echo "downloading makemkv"
       pdir="$PWD"
@@ -314,6 +298,32 @@ if [[ $makemkv == true ]]; then
     else
       echo "makemkv is current version. Skipping..."
   fi
+}
+
+
+if [[ $sysconf == true ]]; then
+config_system
+fi
+
+if [[ $remotefs != false ]]; then
+setup_remote_fs
+fi
+
+if [[ $bins == true ]]; then
+install_binaries
+fi
+
+if [[ $buildnvcodec == true ]]; then
+build_nv_codec
+fi
+  
+
+if [[ $ffmpeg == true ]]; then
+install_ffmpeg
+fi
+
+if [[ $makemkv == true ]]; then
+install_makemkv
 fi
 
 if [[ $buildblurayinfo == true ]]; then
