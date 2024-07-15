@@ -18,10 +18,17 @@ Then:
 ```
 sudo ./install.sh -i
 ```
-To only update the bash scripts from the repo:
+To only download and reinstall updated bash scripts from the repo:
 ```
 sudo ./install.sh -bd
 ```
+
+To download, build and install ffmpeg:
+```
+install -f <Ver>
+```
+Version number is optional.  if left empty it will use version number defined in config file
+
 ## TV RENAMING:
 The system currently can't discern between TV and Movie discs.  To help with that, there is a helper function in the dvdrip script to quickly move and rename the files ripped from a TV disc.
 
