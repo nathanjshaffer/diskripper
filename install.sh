@@ -241,7 +241,8 @@ build_nv_codec() {
   apt-get install libnvidia-decode-550-server
   apt-get install libnvidia-encode-550-server
   
-  apt-get install linux-modules-extra-$(uname -r)-nvidia
+  apt-get install --download-only linux-headers-$(uname -r)-nvidia
+  apt-get install --download-only linux-modules-extra-$(uname -r)-nvidia
   
   #wget http://security.ubuntu.com/ubuntu/pool/main/l/linux-nvidia/linux-modules-extra-$(uname -r)-nvidia_xxx_amd64.deb
   
