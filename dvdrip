@@ -1,6 +1,5 @@
 #!/bin/bash
 source /usr/share/diskripper/config
-
 #set -xv
 
 ripdir="${DVD_ripdir}"
@@ -22,7 +21,13 @@ episodeStartNum=0
 
 GetDiscname()
 {
-    discname=$(blkid -o value -s LABEL $device)
+    discname=$(lsdvd $device | grep "Disc Title")
+    discname=${discname:12}
+    
+    if [[ $discname == "" ]]; then
+      discname=$(blkid -o value -s LABEL $device)
+    fi
+    
     discname=$(tr '_' ' ' <<<"$discname")
     discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
     arr=( $discname )
@@ -64,6 +69,20 @@ RipDisk()
   else
     makemkvcon -r --progress=stdout --minlength=1500 --decrypt mkv dev:$device $titlenum "$ripdir" >> "$logfile"; 
     chown -R $user:$user "$ripdir"
+    
+    numFiles=`find "$ripdir" -maxdepth 1 -iname "*.${outformat}" -printf x | wc -c`
+    
+    if [[ numFiles == 1 ]]; then
+    
+      title=$(mkvinfo "${file}" | grep Title)
+      title=${title:11}
+      
+      if [[ $discname == "" &&  $title != "" ]]; then
+        rmdir "$encdir"
+        encdir="${movie_outdir}/${title}${encdirSuffix}"
+        install -d -o $user -g $user  "$encdir"
+      fi
+    fi
   fi
   
   sleep 2 ;
@@ -89,6 +108,7 @@ EncodeFiles()
     if [[ $encFileNums != "" ]] && [[ ! ${encfiles[@]} =~ $i ]]; then
       continue
     fi
+    
     title=$(mkvinfo "${file}" | grep Title)
     title=${title:11}
     
