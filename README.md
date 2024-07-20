@@ -6,6 +6,25 @@ install.sh contains a lot of setup commands to prepare the system for atoumation
 
 This repo was started as a way to easily set up my system if I needed to do a fresh install, but I am working towards making it a more general purpose setup to make it easy for anyone to set up a similar system reguardless of hardware.
 
+## A word of Caution:
+
+This script installs a lot of utilities including the nvidia linux kernal.  I would not recommend installing this on a computer you need to for other work as it may break things.
+
+if you find that some of your hardware stops working such as networking or soundcards, you probably need to install the kernal extras modules.  The NVIDIA installer switches to an NVIDIA  enabled kernal, but doesn't install any of the extras modules that include a lot of drivers for peripherals.  The script will attempt to download the correct module but doesn't install it.  
+
+The command:
+```
+uname -r
+``` 
+this will return the current kerenl version.  
+running:
+
+```
+sudo apt install linux-modules-extra-$(uname -r)-nvidia
+```
+should install the correct modules that apt downloaded before rebooting.  if that doesn't work, download the file from http://security.ubuntu.com/ubuntu/pool/main/l/linux-nvidia/linux-modules-extra-<kernal version>-nvidia_<kernal version>_amd64.deb
+note that the amd64 version is for 64bit systems, make sure you have the correct version for your architecture.
+
 
 ## INSTALL:
 
