@@ -1,16 +1,16 @@
 #!/bin/bash
 source /usr/share/diskripper/config
+
 #set -xv
 
 ripdir="${DVD_ripdir}"
 encdir="${movie_outdir}"
 outformat="${DVD_outformat}"
 
-logdir=/home/${user}/.var/log/diskrip/bd/
+logdir=/home/${user}/.var/log/diskrip/dvd/
 
 install -d -o $user -g $user ${logdir}
 
-echo "ripping disc " >> ${logdir}/.dvdrip
 
 ripdirSuffix=""
 encdirSuffix=""
@@ -32,6 +32,9 @@ GetDiscname()
     discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
     arr=( $discname )
     discname=${arr[@]^}
+    
+    touch ${logdir}riplist.txt
+    echo "ripping disc $discname " >> ${logdir}riplist.txt
 }
 
 CalcEncodeDir()
@@ -69,20 +72,6 @@ RipDisk()
   else
     makemkvcon -r --progress=stdout --minlength=1500 --decrypt mkv dev:$device $titlenum "$ripdir" >> "$logfile"; 
     chown -R $user:$user "$ripdir"
-    
-    numFiles=`find "$ripdir" -maxdepth 1 -iname "*.${outformat}" -printf x | wc -c`
-    
-    if [[ numFiles == 1 ]]; then
-    
-      title=$(mkvinfo "${file}" | grep Title)
-      title=${title:11}
-      
-      if [[ $discname == "" &&  $title != "" ]]; then
-        rmdir "$encdir"
-        encdir="${movie_outdir}/${title}${encdirSuffix}"
-        install -d -o $user -g $user  "$encdir"
-      fi
-    fi
   fi
   
   sleep 2 ;
@@ -133,11 +122,11 @@ EncodeFiles()
         echo "Encoding $file to ${fileoutname}" >> "$logfile";
         
         if [[ $test == true ]]; then
-          eval "echo \"$ffmpeg_string\""
-#          echo "ffmpeg -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i \"${file}\" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 \"${encdir}/${fileoutname}\""
+          encstr="echo ${ffmpeg_string}"
+          eval $encstr
         else
-          eval "$ffmpeg_string"  2> >(tee -a "$logfile");
-          #ffmpeg -loglevel level -nostdin -y -hwaccel cuda -hwaccel_output_format cuda -i "${file}" -c:v hevc_nvenc -gpu any -rc constqp -cq 22 "${encdir}/${fileoutname}" 2> >(tee -a "$logfile");
+          encstr=${ffmpeg_string}
+          eval "${encstr}"  2> >(tee -a "$logfile");
           RC=$?
           if [ "${RC}" -eq "0" ]; then
             echo "removing $file" 
@@ -153,7 +142,10 @@ EncodeFiles()
     ((i=i+1))
   done < <(find "$ripdir" -maxdepth 1 -iname "*.${outformat}" -print0 | sort -z)
   
-  rmdir ${encdir}
+  # remove directory if empty
+  if [ -z "$( ls -A ${ripdir} )" ]; then
+    rmdir ${ripdir}
+  fi
 }
 
 ###################
