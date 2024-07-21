@@ -1,6 +1,6 @@
 #!/bin/bash
-source /usr/share/diskripper/config
-
+source /usr/share/diskripper/.diskripper.conf
+source ~/.diskripper.conf
 #set -xv
 
 ripdir="${DVD_ripdir}"

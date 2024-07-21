@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./config
+source ./.diskripper.conf
 # see udev events - sudo udevadm monitor
 
 # lookup udev variables - udevadm info --query=all --name=/dev/#name
@@ -207,13 +207,13 @@ install_binaries() {
     wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/autodisk
   fi  
   
-  if [ ! -f "./config" ]; then 
-    wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/config 
+  if [ ! -f "./.diskripper.conf" ]; then 
+    wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/.diskripper.conf 
   fi
   
   chown -R $user:$user ./
     
-  install -D -m 755 -t  /usr/share/diskripper ./config
+  install -D -m 755 -t  /usr/share/diskripper ./.diskripper.conf
   install -c -D -m 755 ./autodisk /usr/local/bin/
   install -c -D -m 755 ./dvdrip /usr/local/bin/
   install -c -D -m 755 ./cdrip /usr/local/bin/

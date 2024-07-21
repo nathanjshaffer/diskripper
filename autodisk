@@ -1,5 +1,5 @@
 #!/bin/bash
-source /usr/share/diskripper/config
+source /usr/share/diskripper/.diskripper.conf
 
 #echo "autodisk " `date '+%s'` "$DEVNAME \n" > /home/${user}/.var/log/diskrip/.autodisk.log
 {
