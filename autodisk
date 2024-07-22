@@ -1,7 +1,6 @@
 #!/bin/bash
 source /usr/share/diskripper/.diskripper.conf
 
-#echo "autodisk " `date '+%s'` "$DEVNAME \n" > /home/${user}/.var/log/diskrip/.autodisk.log
 {
   if [ "$ID_CDROM_MEDIA_BD" -eq "1" ]; then
     runuser -l $user -c "echo dvdrip ripdisk -e $DEVNAME | at now"

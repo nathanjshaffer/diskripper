@@ -1,7 +1,8 @@
 #!/bin/bash
 source /usr/share/diskripper/.diskripper.conf
+
 source ~/.diskripper.conf
-#set -xv
+set -xv
 
 ripdir="${DVD_ripdir}"
 encdir="${movie_outdir}"
@@ -10,7 +11,6 @@ outformat="${DVD_outformat}"
 logdir=/home/${user}/.var/log/diskrip/dvd/
 
 install -d -o $user -g $user ${logdir}
-
 
 ripdirSuffix=""
 encdirSuffix=""
@@ -21,20 +21,28 @@ episodeStartNum=0
 
 GetDiscname()
 {
-    discname=$(lsdvd $device | grep "Disc Title")
-    discname=${discname:12}
+    discname=$(blkid -o value -s LABEL $device)
     
     if [[ $discname == "" ]]; then
-      discname=$(blkid -o value -s LABEL $device)
+      discname=$(lsdvd $device | grep "Disc Title")
+      discname=${discname:12}
     fi
     
-    discname=$(tr '_' ' ' <<<"$discname")
+    if [[ $discname == "" ]]; then
+      discname=`makemkvcon -r info dev:$device| grep "$device"`
+      OIFS=$IFS
+      IFS=',' read -r -a array <<< "$discname"
+      IFS=$OIFS
+      discname=$(tr -d '"'  <<<${array[5]})
+    fi
+    
+    discname=$(tr '_' ' ' <<<$discname)
     discname=$(echo "$discname" | tr '[:upper:]' '[:lower:]')
     arr=( $discname )
     discname=${arr[@]^}
     
     touch ${logdir}riplist.txt
-    echo "ripping disc $discname " >> ${logdir}riplist.txt
+    echo "ripping disc ${discname} " >> ${logdir}riplist.txt
 }
 
 CalcEncodeDir()
@@ -73,6 +81,8 @@ RipDisk()
     makemkvcon -r --progress=stdout --minlength=1500 --decrypt mkv dev:$device $titlenum "$ripdir" >> "$logfile"; 
     chown -R $user:$user "$ripdir"
   fi
+  dn=$(blkid -o value -s LABEL $device)
+  echo $dn >>  ~/.var/log/diskrip/.diskripper.log
   
   sleep 2 ;
 }
@@ -130,7 +140,7 @@ EncodeFiles()
           RC=$?
           if [ "${RC}" -eq "0" ]; then
             echo "removing $file" 
-            rm "$file" 
+#            rm "$file" 
           fi
         fi  
       fi
@@ -144,7 +154,7 @@ EncodeFiles()
   
   # remove directory if empty
   if [ -z "$( ls -A ${ripdir} )" ]; then
-    rmdir ${ripdir}
+    rmdir "${ripdir}"
   fi
 }
 
@@ -168,6 +178,26 @@ RipDiskMode()
   done
   
   device=$1
+  counter=0
+  
+#  file -s $device >> ~/.var/log/diskrip/.diskripper.log
+#  err=$( file -s $device | grep "data")
+#  echo $err >> ~/.var/log/diskrip/.diskripper.log
+#  
+#  while [[ $err == "" ]]; do
+#    sleep 2
+#    echo $err >> ~/.var/log/diskrip/.diskripper.log
+#    counter=$((counter + 1))
+#    if [ $counter -ge 20 ]; then break; fi
+#    err=$( file -s $device | grep "data")
+#  done
+#  
+#  sleep 10
+#  /home/nathan/diskripper/rom_ready
+#  
+#  dn=$(blkid -o value -s LABEL $device)
+#  echo $dn >>  ~/.var/log/diskrip/.diskripper.log
+  
   GetDiscname
   logfile="${logdir}${discname}.log"
   RipDisk

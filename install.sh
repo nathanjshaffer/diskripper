@@ -1,7 +1,6 @@
 #!/bin/bash
 source ./.diskripper.conf
 # see udev events - sudo udevadm monitor
-
 # lookup udev variables - udevadm info --query=all --name=/dev/#name
 
 
@@ -17,7 +16,7 @@ getrepo=false
 buildnvcodec=false
 makemkv=false
 ffmpeg=false
-remotefs=""
+remotefs=false
 Help()
 {
    # Display Help
@@ -166,7 +165,7 @@ config_system() {
   dpkg-reconfigure libdvd-pkg
   apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd abcde at flac git
   apt-get install build-essential pkg-config libc6-dev libssl-dev libexpat1-dev libavcodec-dev libgl1-mesa-dev qtbase5-dev zlib1g-dev libx264-dev libx265-dev
-  apt-get install mkvtoolnix
+  apt-get install mkvtoolnix libcdio-utils
 
   systemctl enable --now atd
   
@@ -208,7 +207,7 @@ install_binaries() {
   fi  
   
   if [ ! -f "./.diskripper.conf" ]; then 
-    wget -O ./autodisk https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/.diskripper.conf 
+    wget -O ./.diskripper.conf https://raw.githubusercontent.com/nathanjshaffer/diskripper/main/.diskripper.conf 
   fi
   
   chown -R $user:$user ./
