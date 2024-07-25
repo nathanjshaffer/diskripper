@@ -142,16 +142,16 @@ fi
 
 
   rep_str=`grep "user" ./config`
-  sed -i "s/$rep_str/user=$user/" ./config
+  sed -i "s/$rep_str/user=$user/" ./.diskripper.conf
 
   rep_str=`grep "DVD_ripdir" ./config`
-  sed -i "s/$rep_str/DVD_ripdir=$DVD_ripdir/" ./config
+  sed -i "s/$rep_str/DVD_ripdir=$DVD_ripdir/" ./.diskripper.conf
 
   rep_str=`grep "movie_outdir" ./config`
-  sed -i "s/$rep_str/movie_outdir=$movie_outdir/" ./config
+  sed -i "s/$rep_str/movie_outdir=$movie_outdir/" ./.diskripper.conf
 
   rep_str=`grep "CD_ripdir" ./config`
-  sed -i "s/$rep_str/CD_ripdir=$CD_ripdir/" ./config
+  sed -i "s/$rep_str/CD_ripdir=$CD_ripdir/" ./.diskripper.conf
 
 #####
 
@@ -168,6 +168,9 @@ config_system() {
   apt-get install mkvtoolnix libcdio-utils
 
   systemctl enable --now atd
+  
+  wget https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64 -O /usr/bin/yq &&    chmod +x /usr/bin/yq
+
   
   echo 'SUBSYSTEM=="block", ENV{ID_CDROM}=="1", ENV{ID_TYPE}=="cd", ACTION=="change", RUN+="/usr/local/bin/autodisk '"'"'%E(DEVNAME)'"'"'"' | tee /etc/udev/rules.d/autodisk.rules
 
