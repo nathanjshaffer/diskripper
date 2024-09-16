@@ -160,7 +160,7 @@ fi
 config_system() {
  echo "config system"
  
-  apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
+  apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan gcp
   apt-get install libdvd-pkg
   dpkg-reconfigure libdvd-pkg
   apt-get install regionset libavcodec-extra dvdbackup yasm lsdvd abcde at flac git
